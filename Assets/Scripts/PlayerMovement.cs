@@ -3,6 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
+    [SerializeField] private Player _player;
     [SerializeField] private float _speed;
     [SerializeField] private float _jumpForce;
     [SerializeField] private float _gravity;
@@ -52,11 +53,29 @@ public class PlayerMovement : MonoBehaviour
         else if (_moveLine == 2)
             targetPosition += Vector3.right * _lineDistance;
 
-        transform.position = targetPosition;
+        if (transform.position == targetPosition)
+            return;
+
+        Vector3 diff = targetPosition - transform.position;
+        Vector3 moveDirection = diff.normalized * 25 * Time.deltaTime;
+
+        if(moveDirection.sqrMagnitude < diff.sqrMagnitude)
+            _characterController.Move(moveDirection);
+        else
+            _characterController.Move(diff);
+
     }
 
     private void Jump() 
     {
         _direction.y = _jumpForce;
+    }
+
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if(hit.gameObject.CompareTag("obstacle"))
+        {
+            _player.Death();
+        }
     }
 }
